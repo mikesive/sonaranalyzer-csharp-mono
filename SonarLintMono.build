@@ -14,12 +14,9 @@
 	
 	
 	<!-- Tools -->
+	<property name="nuget.path" value="nuget" overwrite="false" /> <!-- Path to nuget executable -->
 	<property name="xbuild.path" value="xbuild" overwrite="false" /> <!-- Path to xbuild executable -->
 	<property name="msbuild.path" value="${framework::get-framework-directory(nant.settings.currentframework)}\MSBuild.exe" overwrite="false" />
-	
-	
-	<!-- Paths -->
-	<property name="src.dir" value="src" overwrite="false" />
 	
 	
 	<!-- Flag targets -->
@@ -39,6 +36,13 @@
 	
 	<target name="build" description="Compile the source code">
 		
+		<echo message="Restoring packages..." />
+		<exec program="${nuget.path}">
+			<arg value="restore" />
+			<arg value="sonaranalyzer-csharp/SonarLint.sln" />
+		</exec>
+
+		
 		<property name="build.conf" value="Release" />
 		<if test="${debug}">
 			<property name="build.conf" value="Debug" />
@@ -54,6 +58,7 @@
 			<property name="build.tool" value="${msbuild.path}" />
 		</if>
 		
+		<echo message="Building SonarLint.DocGenerator..." />
 		<exec program="${build.tool}">
 			<environment>
 				<variable name="XBUILD_EMIT_SOLUTION" value="1" />
@@ -64,8 +69,63 @@
 			<arg value="/property:Configuration=${build.conf}"/>
 			<arg value="/p:TargetFrameworkVersion=v4.5.1" />
 			<arg value="/tv:12.0" />
-			<arg value="src/SonarLint.DocGenerator/SonarLint.DocGenerator.csproj" />
+			<arg value="sonaranalyzer-csharp/src/SonarLint.DocGenerator/SonarLint.DocGenerator.csproj" />
 		</exec>
+		<move todir="bin">
+			<fileset basedir="sonaranalyzer-csharp/src/SonarLint.DocGenerator/bin/${build.conf}/">
+				<include name="*.dll" />
+				<include name="*.exe" />
+				<include name="*.exe.config" />
+				<include name="*.pdb" />
+				<include name="*.mdb" />
+			</fileset>
+		</move>
+		
+		<echo message="Building SonarQube.SonarLint.Descriptor..." />
+		<exec program="${build.tool}">
+			<environment>
+				<variable name="XBUILD_EMIT_SOLUTION" value="1" />
+			</environment>
+			<arg value="/nologo" />
+			<arg value="/verbosity:quiet" />
+			<arg value="/target:rebuild" />
+			<arg value="/property:Configuration=${build.conf}"/>
+			<arg value="/p:TargetFrameworkVersion=v4.5.1" />
+			<arg value="/tv:12.0" />
+			<arg value="sonaranalyzer-csharp/src/SonarQube.SonarLint.Descriptor/Descriptor.csproj" />
+		</exec>
+		<move todir="bin">
+			<fileset basedir="sonaranalyzer-csharp/src/SonarQube.SonarLint.Descriptor/bin/${build.conf}/">
+				<include name="*.dll" />
+				<include name="*.exe" />
+				<include name="*.exe.config" />
+				<include name="*.pdb" />
+				<include name="*.mdb" />
+			</fileset>
+		</move>
+		
+		<echo message="Building SonarQube.SonarLint.Runner..." />
+		<exec program="${build.tool}">
+			<environment>
+				<variable name="XBUILD_EMIT_SOLUTION" value="1" />
+			</environment>
+			<arg value="/nologo" />
+			<arg value="/verbosity:quiet" />
+			<arg value="/target:rebuild" />
+			<arg value="/property:Configuration=${build.conf}"/>
+			<arg value="/p:TargetFrameworkVersion=v4.5.1" />
+			<arg value="/tv:12.0" />
+			<arg value="sonaranalyzer-csharp/src/SonarQube.SonarLint.Runner/Runner.csproj" />
+		</exec>
+		<move todir="bin">
+			<fileset basedir="sonaranalyzer-csharp/src/SonarQube.SonarLint.Runner/bin/${build.conf}/">
+				<include name="*.dll" />
+				<include name="*.exe" />
+				<include name="*.exe.config" />
+				<include name="*.pdb" />
+				<include name="*.mdb" />
+			</fileset>
+		</move>
 		
 		<echo message="Build complete." />
 		
