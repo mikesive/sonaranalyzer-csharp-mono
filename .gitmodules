@@ -1,0 +1,3 @@
+[submodule "sonaranalyzer-csharp"]
+	path = sonaranalyzer-csharp
+	url = https://github.com/SonarSource-VisualStudio/sonaranalyzer-csharp.git
